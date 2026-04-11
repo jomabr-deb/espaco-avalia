@@ -57,7 +57,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 px-4">
       <div className="w-full max-w-sm text-center">
         <div className="flex justify-center mb-4">
-          <Logo size={56} />
+          <Logo size={80} />
         </div>
         <h1 className="font-serif text-2xl font-bold text-gray-900 mb-1">
           {BRAND.name}
