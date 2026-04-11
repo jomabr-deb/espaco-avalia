@@ -1,26 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from '@/components/Logo'
-import type { TeacherSession } from '@/lib/types'
+import { useTeacherSession } from '@/lib/hooks'
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<TeacherSession | null>(null)
+  const { session } = useTeacherSession()
   const router = useRouter()
-
-  useEffect(() => {
-    try {
-      const cookies = document.cookie.split(';').reduce((acc, c) => {
-        const [key, val] = c.trim().split('=')
-        if (key && val) acc[key] = decodeURIComponent(val)
-        return acc
-      }, {} as Record<string, string>)
-      if (cookies['teacher_session']) {
-        setSession(JSON.parse(cookies['teacher_session']))
-      }
-    } catch { /* handled by middleware */ }
-  }, [])
 
   async function handleLogout() {
     await fetch('/api/teacher-auth', { method: 'DELETE' })

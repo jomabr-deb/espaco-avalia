@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 
+// GET — return current teacher session
+export async function GET() {
+  const cookieStore = await cookies()
+  const raw = cookieStore.get('teacher_session')
+  if (!raw) {
+    return NextResponse.json({ session: null }, { status: 401 })
+  }
+  try {
+    const session = JSON.parse(raw.value)
+    return NextResponse.json({ session })
+  } catch {
+    return NextResponse.json({ session: null }, { status: 401 })
+  }
+}
+
+// POST — login with access code
 export async function POST(request: NextRequest) {
   const { code } = await request.json()
 
@@ -54,6 +70,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ success: true, teacher: { nome: teacher.nome }, turmas })
 }
 
+// DELETE — logout
 export async function DELETE() {
   const cookieStore = await cookies()
   cookieStore.delete('teacher_session')
