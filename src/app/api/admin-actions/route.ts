@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-server'
 
+async function logAction(supabase: ReturnType<typeof createAdminClient>, acao: string, detalhes: Record<string, unknown>) {
+  try {
+    await supabase.from('audit_log').insert({ acao, detalhes })
+  } catch { /* non-blocking */ }
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json()
   const { action, ...params } = body
@@ -13,6 +19,7 @@ export async function POST(request: NextRequest) {
         const { id, ...fields } = params
         const { error } = await supabase.from('students').update(fields).eq('id', id)
         if (error) throw error
+        await logAction(supabase, 'student_update', { student_id: id, fields })
         return NextResponse.json({ success: true })
       }
       case 'deactivate_student': {
@@ -22,6 +29,7 @@ export async function POST(request: NextRequest) {
           desativado_motivo: params.motivo || 'Desativado pela direção',
         }).eq('id', params.id)
         if (error) throw error
+        await logAction(supabase, 'student_deactivate', { student_id: params.id, motivo: params.motivo })
         return NextResponse.json({ success: true })
       }
       case 'reactivate_student': {
@@ -29,6 +37,7 @@ export async function POST(request: NextRequest) {
           ativo: true, desativado_em: null, desativado_motivo: null,
         }).eq('id', params.id)
         if (error) throw error
+        await logAction(supabase, 'student_reactivate', { student_id: params.id })
         return NextResponse.json({ success: true })
       }
 
@@ -39,6 +48,7 @@ export async function POST(request: NextRequest) {
         if (params.newStatus === 'validado') update.validado_em = new Date().toISOString()
         const { error } = await supabase.from('qsi_responses').update(update).eq('id', params.id)
         if (error) throw error
+        await logAction(supabase, 'qsi_status_change', { response_id: params.id, new_status: params.newStatus, obs: params.obs })
         return NextResponse.json({ success: true })
       }
 
@@ -47,6 +57,7 @@ export async function POST(request: NextRequest) {
         const { id, ...fields } = params
         const { error } = await supabase.from('teachers').update(fields).eq('id', id)
         if (error) throw error
+        await logAction(supabase, 'teacher_update', { teacher_id: id, fields })
         return NextResponse.json({ success: true })
       }
       case 'regenerate_code': {
@@ -55,12 +66,12 @@ export async function POST(request: NextRequest) {
         for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
         const { error } = await supabase.from('teachers').update({ access_code: code }).eq('id', params.id)
         if (error) throw error
+        await logAction(supabase, 'teacher_code_regenerate', { teacher_id: params.id })
         return NextResponse.json({ success: true, code })
       }
 
       // ── DEADLINES ──
       case 'create_deadline': {
-        // Deactivate current active deadline
         await supabase.from('deadlines').update({ ativo: false }).eq('ativo', true)
         const { error } = await supabase.from('deadlines').insert({
           ano: params.ano,
@@ -70,12 +81,14 @@ export async function POST(request: NextRequest) {
           permitir_atraso: params.permitir_atraso || false,
         })
         if (error) throw error
+        await logAction(supabase, 'deadline_create', { ano: params.ano, semestre: params.semestre, data_limite: params.data_limite })
         return NextResponse.json({ success: true })
       }
       case 'update_deadline': {
         const { id, ...fields } = params
         const { error } = await supabase.from('deadlines').update(fields).eq('id', id)
         if (error) throw error
+        await logAction(supabase, 'deadline_update', { deadline_id: id, fields })
         return NextResponse.json({ success: true })
       }
 
@@ -83,6 +96,7 @@ export async function POST(request: NextRequest) {
       case 'delete_document': {
         const { error } = await supabase.from('documents').delete().eq('id', params.id)
         if (error) throw error
+        await logAction(supabase, 'document_delete', { document_id: params.id })
         return NextResponse.json({ success: true })
       }
 

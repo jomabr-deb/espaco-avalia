@@ -1,0 +1,17 @@
+{
+  "name": "Espaço Avalia",
+  "short_name": "Avalia",
+  "description": "Sistema de Documentos Avaliativos — Escola Espaço da Criança",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#101828",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "431x431",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Espaço Avalia
 
-## Getting Started
+Sistema de gerenciamento de documentos avaliativos da **Escola Espaço da Criança** — Curitiba/PR.
 
-First, run the development server:
+## Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Interface da Professora (mobile-first)
+- Login por código de acesso (6 caracteres)
+- Preenchimento do QSI (Questionário de Sondagem Inicial) por seções
+- Autosave a cada 2 segundos
+- Visualização de status: rascunho, finalizado, devolvido
+- Consulta de documentos dos alunos (PD, Estudo de Caso, PAEE, PEI)
+
+### Interface da Direção/Coordenação (desktop + mobile)
+- Dashboard com estatísticas em tempo real
+- Gestão de alunos: edição, inclusão, desativação
+- Fluxo de QSI: revisar → devolver com observação → validar
+- Exportação DOCX individual e backup JSON
+- Importação de alunos do ERP com tela de conciliação
+- Gestão de professoras: códigos de acesso, atribuição de turmas
+- Configuração de prazos semestrais
+
+## Stack
+
+- **Frontend**: Next.js (App Router) + TypeScript + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Deploy**: Vercel (deploy automático via GitHub)
+- **Exportação**: docx-js (geração de documentos Word)
+
+## Estrutura
+
+```
+src/
+├── app/
+│   ├── login/              → Login unificado
+│   ├── professora/         → Interface mobile
+│   │   ├── qsi/            → Formulário QSI
+│   │   └── docs/           → Consulta documentos
+│   ├── admin/              → Painel direção
+│   │   ├── alunos/         → Gestão de alunos + importação
+│   │   ├── qsi/            → Gestão QSI + exportação
+│   │   ├── docs/           → Upload documentos
+│   │   ├── professoras/    → Gestão professoras
+│   │   ├── config/         → Prazos + backup
+│   │   └── sobre/          → Página Sobre
+│   └── api/                → API routes
+├── components/             → Componentes reutilizáveis
+└── lib/                    → Configuração, tipos, utilitários
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuração
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Variáveis de ambiente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Criar `.env.local` na raiz:
 
-## Learn More
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Desenvolvimento local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Dados
 
-## Deploy on Vercel
+- **145 alunos** em 6 turmas (Berçário a Infantil 5)
+- **12 templates QSI** (6 turmas × 2 semestres)
+- **12 professoras** com códigos de acesso individuais
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Versão 1.0** — EC Atividades Educacionais Ltda. — Todos os direitos reservados.
