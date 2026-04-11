@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
   // Match
   const results: MatchResult[] = imported.map(imp => {
-    const match = (existing || []).find(ex => normalize(ex.nome) === imp.nome_normalized)
+    const match = (existing || []).find((ex: Record<string, string>) => normalize(ex.nome) === imp.nome_normalized)
 
     if (!match) {
       return { action: 'novo' as const, imported: imp, existing: null, changes: [] }
