@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
   // Find missing (in DB but not in import)
   const importedNames = new Set(imported.map(i => i.nome_normalized))
-  const missing = (existing || []).filter(ex => !importedNames.has(normalize(ex.nome)))
+  const missing = (existing || []).filter((ex: Record<string, string>) => !importedNames.has(normalize(ex.nome)))
 
   return NextResponse.json({
     results,
