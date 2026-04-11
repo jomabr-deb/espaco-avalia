@@ -39,6 +39,7 @@ export default function AlunosPage() {
     await adminAction('update_student', {
       id: editing.id,
       nome: editing.nome,
+	  nascimento: editing.nascimento,
       serie: editing.serie,
       subturma: editing.subturma,
       turno: editing.turno,
@@ -122,7 +123,7 @@ export default function AlunosPage() {
               <tr key={s.id} className={`hover:bg-gray-50 ${!s.ativo ? 'opacity-50' : ''}`}>
                 <td className="px-3 py-2 border-b border-gray-100 font-medium">{s.nome}</td>
                 <td className="px-3 py-2 border-b border-gray-100">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{background:TURMA_COLORS[s.serie]}}>{turmaLabel(s)}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap" style={{background:TURMA_COLORS[s.serie]}}>{turmaLabel(s)}</span>
                 </td>
                 <td className="px-3 py-2 border-b border-gray-100 text-gray-500">{s.turno}</td>
                 <td className="px-3 py-2 border-b border-gray-100 text-gray-500">{calcAge(s.nascimento)}</td>
@@ -186,7 +187,11 @@ export default function AlunosPage() {
                 <Field label="Subturma" value={editing.subturma||''} onChange={v => setEditing({...editing, subturma: v||null})} />
                 <Field label="Turno" value={editing.turno||''} onChange={v => setEditing({...editing, turno: v||null})} />
               </div>
-
+<div>
+  <label className="text-xs text-gray-500 block mb-1">Data de nascimento</label>
+  <input type="date" value={editing.nascimento || ''} onChange={e => setEditing({...editing, nascimento: e.target.value || null})}
+    className="w-full px-2 py-1.5 rounded border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+</div>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" checked={editing.inclusao} onChange={e => setEditing({...editing, inclusao: e.target.checked})} />
                 Aluno de inclusão
