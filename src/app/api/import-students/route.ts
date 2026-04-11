@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     results,
-    missing: missing.map(m => ({ id: m.id, nome: m.nome, serie: m.serie, subturma: m.subturma })),
+    missing: missing.map((m: Record<string, string>) => ({ id: m.id, nome: m.nome, serie: m.serie, subturma: m.subturma })),
     summary: {
       total: imported.length,
       identicos: results.filter(r => r.action === 'identico').length,
