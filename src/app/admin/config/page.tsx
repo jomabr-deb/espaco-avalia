@@ -90,12 +90,13 @@ export default function ConfigPage() {
             Importe a listagem do ERP para atualizar alunos. O sistema fará a conciliação automática
             mostrando matches, mudanças e novos registros antes de confirmar.
           </p>
-          <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium">
-            Selecionar Arquivo .xls
-          </button>
+          <a href="/admin/alunos/importar"
+            className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium no-underline inline-block">
+            📥 Importar Alunos do ERP
+          </a>
           <p className="text-[10px] text-gray-400 mt-3">
             O processo inclui 4 etapas: Upload → Matching → Conciliação → Confirmação.<br />
-            Nenhum dado será perdido. Será implementado na Fase 4.
+            Nenhum dado será perdido.
           </p>
         </div>
 
@@ -104,14 +105,12 @@ export default function ConfigPage() {
           <h3 className="text-sm font-semibold mb-3">💾 Backup e Exportação</h3>
           <p className="text-xs text-gray-500 mb-3">Exporte todos os dados do sistema para backup.</p>
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium hover:bg-gray-50">
-              📊 Exportar .xlsx
-            </button>
-            <button className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium hover:bg-gray-50">
-              📄 Exportar .json
+            <button onClick={() => window.open('/api/export-backup', '_blank')}
+              className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium hover:bg-gray-50">
+              📄 Exportar Backup (.json)
             </button>
           </div>
-          <p className="text-[10px] text-gray-400 mt-3">Será implementado na Fase 4.</p>
+          <p className="text-[10px] text-gray-400 mt-3">O arquivo contém todos os dados do sistema: alunos, professoras, respostas QSI, documentos e configurações.</p>
         </div>
 
         {/* Admin users */}

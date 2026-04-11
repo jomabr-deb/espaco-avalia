@@ -209,7 +209,10 @@ export default function QsiPage() {
                       {s.response && st !== 'nao_iniciado' && (
                         <button onClick={() => handleCopy(s)} className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">📋 Copiar</button>
                       )}
-                      <button className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">⬇ DOCX</button>
+                      {s.response && st !== 'nao_iniciado' && (
+                        <button onClick={() => window.open(`/api/export-qsi?id=${s.response!.id}`, '_blank')}
+                          className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">⬇ DOCX</button>
+                      )}
                     </div>
                   </td>
                 </tr>
