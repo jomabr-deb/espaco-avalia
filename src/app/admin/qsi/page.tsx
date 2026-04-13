@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { adminAction } from '@/lib/admin-actions'
 import StatusBadge from '@/components/StatusBadge'
-import { ALL_SERIES, TURMA_COLORS, STATUS_META } from '@/lib/constants'
+import { ALL_SERIES, TURMA_COLORS, STATUS_META, LEVELS, LEVEL_META } from '@/lib/constants'
 import { turmaLabel } from '@/lib/utils'
-import type { Student, QsiResponse, QsiTemplate, Deadline, QsiStatus, Teacher, Turma } from '@/lib/types'
+import type { Student, QsiResponse, QsiTemplate, Deadline, QsiStatus, Turma } from '@/lib/types'
 
 interface StudentWithQsi extends Student {
   response?: QsiResponse
@@ -114,6 +114,36 @@ export default function QsiPage() {
 
   if (loading) return <div className="flex items-center justify-center h-48 text-gray-400 text-sm">Carregando...</div>
 
+  // Action buttons component (reused in table and mobile cards)
+  function ActionButtons({ s }: { s: StudentWithQsi }) {
+    const st = getStatus(s)
+    return (
+      <div className="flex gap-1 flex-wrap">
+        {s.response && st !== 'nao_iniciado' && (
+          <button onClick={() => setViewing(s)}
+            className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-blue-50 text-blue-600">👁 Ver</button>
+        )}
+        {st === 'finalizado' && s.response && (
+          <button onClick={() => handleStatusChange(s.response!.id, 'em_revisao')}
+            className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">🔍 Revisar</button>
+        )}
+        {st === 'em_revisao' && s.response && (<>
+          <button onClick={() => setShowDevolve(s.response!.id)}
+            className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-orange-50">↩ Devolver</button>
+          <button onClick={() => handleStatusChange(s.response!.id, 'validado')}
+            className="px-2 py-0.5 rounded bg-teal-600 text-white text-[10px]">✓ Validar</button>
+        </>)}
+        {s.response && st !== 'nao_iniciado' && (
+          <button onClick={() => handleCopy(s)} className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">📋 Copiar</button>
+        )}
+        {s.response && st !== 'nao_iniciado' && (
+          <button onClick={() => window.open(`/api/export-qsi?id=${s.response!.id}`, '_blank')}
+            className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">⬇ DOCX</button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
@@ -180,7 +210,7 @@ export default function QsiPage() {
                     {s.nome} {s.inclusao && <span className="text-[9px] font-semibold text-blue-700 bg-blue-100 px-1 py-0.5 rounded">INC</span>}
                   </td>
                   <td className="px-3 py-2 border-b border-gray-100">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{background:TURMA_COLORS[s.serie]}}>{turmaLabel(s)}</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap" style={{background:TURMA_COLORS[s.serie]}}>{turmaLabel(s)}</span>
                   </td>
                   <td className="px-3 py-2 border-b border-gray-100 text-gray-500">{s.teacherName || '—'}</td>
                   <td className="px-3 py-2 border-b border-gray-100"><StatusBadge status={st} /></td>
@@ -195,25 +225,7 @@ export default function QsiPage() {
                     )}
                   </td>
                   <td className="px-3 py-2 border-b border-gray-100">
-                    <div className="flex gap-1">
-                      {st === 'finalizado' && s.response && (
-                        <button onClick={() => handleStatusChange(s.response!.id, 'em_revisao')}
-                          className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">🔍 Revisar</button>
-                      )}
-                      {st === 'em_revisao' && s.response && (<>
-                        <button onClick={() => setShowDevolve(s.response!.id)}
-                          className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-orange-50">↩ Devolver</button>
-                        <button onClick={() => handleStatusChange(s.response!.id, 'validado')}
-                          className="px-2 py-0.5 rounded bg-teal-600 text-white text-[10px]">✓ Validar</button>
-                      </>)}
-                      {s.response && st !== 'nao_iniciado' && (
-                        <button onClick={() => handleCopy(s)} className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">📋 Copiar</button>
-                      )}
-                      {s.response && st !== 'nao_iniciado' && (
-                        <button onClick={() => window.open(`/api/export-qsi?id=${s.response!.id}`, '_blank')}
-                          className="px-2 py-0.5 rounded border border-gray-200 text-[10px] hover:bg-gray-50">⬇ DOCX</button>
-                      )}
-                    </div>
+                    <ActionButtons s={s} />
                   </td>
                 </tr>
               )
@@ -233,23 +245,143 @@ export default function QsiPage() {
                 <StatusBadge status={st} />
               </div>
               <div className="text-[11px] text-gray-400 mb-2">{turmaLabel(s)} · {s.teacherName || '—'}</div>
-              <div className="flex gap-1 flex-wrap">
-                {st === 'finalizado' && s.response && (
-                  <button onClick={() => handleStatusChange(s.response!.id, 'em_revisao')}
-                    className="px-2 py-1 rounded border border-gray-200 text-[10px]">🔍 Revisar</button>
-                )}
-                {st === 'em_revisao' && s.response && (<>
-                  <button onClick={() => setShowDevolve(s.response!.id)}
-                    className="px-2 py-1 rounded border border-gray-200 text-[10px]">↩ Devolver</button>
-                  <button onClick={() => handleStatusChange(s.response!.id, 'validado')}
-                    className="px-2 py-1 rounded bg-teal-600 text-white text-[10px]">✓ Validar</button>
-                </>)}
-                {s.response && <button onClick={() => handleCopy(s)} className="px-2 py-1 rounded border border-gray-200 text-[10px]">📋 Copiar</button>}
-              </div>
+              <ActionButtons s={s} />
             </div>
           )
         })}
       </div>
+
+      {/* ══════════════════════════════════════ */}
+      {/* VIEW MODAL — Visualizar QSI completo  */}
+      {/* ══════════════════════════════════════ */}
+      {viewing && viewing.response && templates[viewing.serie] && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-4"
+          onClick={() => setViewing(null)}>
+          <div className="bg-white rounded-xl w-full max-w-3xl my-8 overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between z-10">
+              <div>
+                <h2 className="font-semibold text-base">{viewing.nome}</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {turmaLabel(viewing)} · QSI {deadline?.semestre}º Semestre {deadline?.ano} · <StatusBadge status={getStatus(viewing)} />
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => handleCopy(viewing)}
+                  className="px-2.5 py-1 rounded border border-gray-200 text-[11px] hover:bg-gray-50">📋 Copiar</button>
+                <button onClick={() => window.open(`/api/export-qsi?id=${viewing.response!.id}`, '_blank')}
+                  className="px-2.5 py-1 rounded border border-gray-200 text-[11px] hover:bg-gray-50">⬇ DOCX</button>
+                <button onClick={() => setViewing(null)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 text-lg">✕</button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-5 py-4">
+              {templates[viewing.serie].sections.map((section, secIdx) => {
+                const hasData = section.checklist.some((_, ci) =>
+                  viewing.response!.checklist_data?.[`${secIdx}_${ci}`]
+                ) || section.prompts.some((_, pi) =>
+                  viewing.response!.text_data?.[`${secIdx}_${pi}`]
+                )
+
+                return (
+                  <div key={secIdx} className="mb-6">
+                    {/* Section title */}
+                    <h3 className="text-sm font-bold text-blue-700 mb-1">{section.title}</h3>
+                    {section.bncc && (
+                      <p className="text-[10px] text-gray-400 mb-3 italic">{section.bncc}</p>
+                    )}
+
+                    {/* Checklist */}
+                    {section.checklist.length > 0 && (
+                      <div className="border border-gray-200 rounded-lg overflow-hidden mb-3">
+                        {/* Checklist header */}
+                        <div className="grid bg-gray-50 border-b border-gray-200" style={{gridTemplateColumns: '1fr 48px 48px 48px 48px'}}>
+                          <div className="px-3 py-1.5 text-[10px] font-semibold text-gray-500">Habilidade</div>
+                          {LEVELS.map(l => (
+                            <div key={l} className="px-1 py-1.5 text-center text-[10px] font-semibold" style={{color: LEVEL_META[l].color}}>{l}</div>
+                          ))}
+                        </div>
+                        {/* Checklist rows */}
+                        {section.checklist.map((item, ci) => {
+                          const val = viewing.response!.checklist_data?.[`${secIdx}_${ci}`] || ''
+                          return (
+                            <div key={ci} className="grid border-b border-gray-100 last:border-0 hover:bg-gray-50"
+                              style={{gridTemplateColumns: '1fr 48px 48px 48px 48px'}}>
+                              <div className="px-3 py-2 text-[11px] text-gray-700 leading-relaxed">{item}</div>
+                              {LEVELS.map(l => (
+                                <div key={l} className="flex items-center justify-center">
+                                  {val === l ? (
+                                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                                      style={{background: LEVEL_META[l].color}}>✓</span>
+                                  ) : (
+                                    <span className="w-5 h-5 rounded-full border border-gray-200" />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* Text responses */}
+                    {section.prompts.map((prompt, pi) => {
+                      const val = viewing.response!.text_data?.[`${secIdx}_${pi}`] || ''
+                      if (!val) return null
+                      return (
+                        <div key={pi} className="mb-2">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-0.5">{prompt}</p>
+                          <div className="bg-gray-50 rounded-lg p-3 text-[12px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {val}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {/* Empty section indicator */}
+                    {!hasData && section.checklist.length > 0 && (
+                      <p className="text-[11px] text-gray-300 italic">Seção não preenchida</p>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Observação da direção (if devolvido) */}
+              {viewing.response!.observacao_direcao && (
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-4">
+                  <p className="text-[11px] font-semibold text-orange-700 mb-1">↩ Observação da direção:</p>
+                  <p className="text-[12px] text-orange-800">{viewing.response!.observacao_direcao}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer with actions */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 py-3 flex items-center justify-between">
+              <div className="text-[11px] text-gray-400">
+                Progresso: {getProgress(viewing)}% · {Object.keys(viewing.response!.checklist_data || {}).length} itens preenchidos
+              </div>
+              <div className="flex gap-2">
+                {getStatus(viewing) === 'finalizado' && (
+                  <button onClick={() => { handleStatusChange(viewing.response!.id, 'em_revisao'); setViewing(null); }}
+                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs hover:bg-gray-50">🔍 Revisar</button>
+                )}
+                {getStatus(viewing) === 'em_revisao' && (<>
+                  <button onClick={() => { setShowDevolve(viewing.response!.id); setViewing(null); }}
+                    className="px-3 py-1.5 rounded-lg border border-orange-300 text-xs text-orange-600 hover:bg-orange-50">↩ Devolver</button>
+                  <button onClick={() => { handleStatusChange(viewing.response!.id, 'validado'); setViewing(null); }}
+                    className="px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs">✓ Validar</button>
+                </>)}
+                <button onClick={() => setViewing(null)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs">Fechar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Devolve modal */}
       {showDevolve && (
