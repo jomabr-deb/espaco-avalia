@@ -106,7 +106,28 @@ export default function TeacherHome() {
             <div className="text-[11px] text-gray-400">Devolvidos</div>
           </div>
         </div>
-
+{/* Legenda */}
+        <div className="bg-white rounded-xl border border-gray-200 p-3 mb-1">
+          <p className="text-[11px] text-gray-400 font-semibold mb-2">Legenda do QSI</p>
+          <div className="grid grid-cols-2 gap-y-1.5 gap-x-4">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white" style={{background:'#6b7280'}}>NA</span>
+              <span className="text-[11px] text-gray-600">Não apresenta</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white" style={{background:'#dc2626'}}>AP</span>
+              <span className="text-[11px] text-gray-600">Com apoio</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white" style={{background:'#d97706'}}>ED</span>
+              <span className="text-[11px] text-gray-600">Em desenvolvimento</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white" style={{background:'#16a34a'}}>C</span>
+              <span className="text-[11px] text-gray-600">Consolidado</span>
+            </div>
+          </div>
+        </div>
         <div className="flex flex-col gap-2.5">
           <a href="/professora/qsi"
             className="flex items-center gap-3 p-4 rounded-xl bg-gray-900 text-white no-underline hover:bg-gray-800 transition">
