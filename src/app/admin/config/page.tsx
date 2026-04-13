@@ -27,16 +27,20 @@ export default function ConfigPage() {
 
   async function handleCreate() {
     setSaving(true)
-    await adminAction('create_deadline', {
-      ano: newAno,
-      semestre: newSem,
-      data_limite: newData,
-      permitir_atraso: newAtraso,
-    })
+    try {
+      await adminAction('create_deadline', {
+        ano: newAno,
+        semestre: newSem,
+        data_limite: newData,
+        permitir_atraso: newAtraso,
+      })
+      setShowNewDeadline(false)
+      setNewData('')
+      load()
+    } catch (err) {
+      alert('Erro ao criar prazo: ' + (err instanceof Error ? err.message : 'Erro desconhecido'))
+    }
     setSaving(false)
-    setShowNewDeadline(false)
-    setNewData('')
-    load()
   }
 
   async function toggleAtraso(dl: Deadline) {

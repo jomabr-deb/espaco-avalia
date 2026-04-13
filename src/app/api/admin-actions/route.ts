@@ -72,23 +72,33 @@ export async function POST(request: NextRequest) {
 
       // ── DEADLINES ──
       case 'create_deadline': {
+        // Deactivate all active deadlines
         await supabase.from('deadlines').update({ ativo: false }).eq('ativo', true)
-        const { error } = await supabase.from('deadlines').insert({
-          ano: params.ano,
-          semestre: params.semestre,
-          data_limite: params.data_limite,
-          ativo: true,
-          permitir_atraso: params.permitir_atraso || false,
-        })
-        if (error) throw error
+        // Try update first (if same ano+semestre exists)
+        const { data: existing } = await supabase
+          .from('deadlines')
+          .select('id')
+          .eq('ano', params.ano)
+          .eq('semestre', params.semestre)
+          .single()
+        if (existing) {
+          const { error } = await supabase.from('deadlines').update({
+            data_limite: params.data_limite,
+            ativo: true,
+            permitir_atraso: params.permitir_atraso || false,
+          }).eq('id', existing.id)
+          if (error) throw error
+        } else {
+          const { error } = await supabase.from('deadlines').insert({
+            ano: params.ano,
+            semestre: params.semestre,
+            data_limite: params.data_limite,
+            ativo: true,
+            permitir_atraso: params.permitir_atraso || false,
+          })
+          if (error) throw error
+        }
         await logAction(supabase, 'deadline_create', { ano: params.ano, semestre: params.semestre, data_limite: params.data_limite })
-        return NextResponse.json({ success: true })
-      }
-      case 'update_deadline': {
-        const { id, ...fields } = params
-        const { error } = await supabase.from('deadlines').update(fields).eq('id', id)
-        if (error) throw error
-        await logAction(supabase, 'deadline_update', { deadline_id: id, fields })
         return NextResponse.json({ success: true })
       }
 
